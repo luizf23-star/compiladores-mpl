@@ -1,0 +1,240 @@
+name: Preparar Entrega 1
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  preparar:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Baixar repositorio novo
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Copiar estrutura oficial do laboratorio
+        run: |
+          git clone --depth 1 --branch master https://github.com/LuizRMSilva1973/compiladores-lab.git /tmp/base
+          rsync -a --exclude='.git' /tmp/base/ ./
+          git checkout HEAD -- README.md .github/workflows/bootstrap-e1.yml
+
+      - name: Aplicar analisador lexico da Entrega 1
+        run: |
+          cat > mplc/lexico.py <<'PY'
+          """Entrega 1 — analise lexica da MPL."""
+
+          from mplc.erros import ErroMPL
+
+
+          class Token:
+              __slots__ = ('tipo', 'lexema', 'linha', 'coluna')
+
+              def __init__(self, tipo, lexema, linha, coluna):
+                  self.tipo = tipo
+                  self.lexema = lexema
+                  self.linha = linha
+                  self.coluna = coluna
+
+              def __str__(self):
+                  return f"{self.linha},{self.coluna},{self.tipo},{self.lexema}"
+
+
+          PALAVRAS = {
+              'funcao': 'FUNCAO',
+              'retorne': 'RETORNE',
+              'se': 'SE',
+              'senao': 'SENAO',
+              'enquanto': 'ENQUANTO',
+              'escreva': 'ESCREVA',
+              'inteiro': 'TIPO_INTEIRO',
+              'real': 'TIPO_REAL',
+              'logico': 'TIPO_LOGICO',
+              'texto': 'TIPO_TEXTO',
+              'vazio': 'TIPO_VAZIO',
+              'verdadeiro': 'LOGICO',
+              'falso': 'LOGICO',
+              'e': 'E',
+              'ou': 'OU',
+              'nao': 'NAO',
+          }
+
+          OPERADORES_DOIS = {
+              '==': 'IGUAL',
+              '!=': 'DIFERENTE',
+              '<=': 'MENOR_IGUAL',
+              '>=': 'MAIOR_IGUAL',
+          }
+
+          SIMBOLOS = {
+              '+': 'MAIS', '-': 'MENOS', '*': 'VEZES', '/': 'DIVIDE', '%': 'RESTO',
+              '<': 'MENOR', '>': 'MAIOR', '=': 'ATRIBUI',
+              '(': 'ABRE_PAR', ')': 'FECHA_PAR', '{': 'ABRE_CHAVE', '}': 'FECHA_CHAVE',
+              ',': 'VIRGULA', ';': 'PONTO_VIRGULA',
+          }
+
+
+          def _inicio_id(c):
+              return c == '_' or 'a' <= c <= 'z' or 'A' <= c <= 'Z'
+
+
+          def _continua_id(c):
+              return _inicio_id(c) or '0' <= c <= '9'
+
+
+          def analisar(fonte):
+              tokens = []
+              i = 0
+              linha = 1
+              coluna = 1
+              tamanho = len(fonte)
+
+              while i < tamanho:
+                  c = fonte[i]
+
+                  if c in ' \t\r':
+                      i += 1
+                      coluna += 1
+                      continue
+
+                  if c == '\n':
+                      i += 1
+                      linha += 1
+                      coluna = 1
+                      continue
+
+                  if fonte.startswith('//', i):
+                      i += 2
+                      coluna += 2
+                      while i < tamanho and fonte[i] != '\n':
+                          i += 1
+                          coluna += 1
+                      continue
+
+                  if fonte.startswith('/*', i):
+                      inicio_linha, inicio_coluna = linha, coluna
+                      i += 2
+                      coluna += 2
+                      fechado = False
+                      while i < tamanho:
+                          if fonte.startswith('*/', i):
+                              i += 2
+                              coluna += 2
+                              fechado = True
+                              break
+                          if fonte[i] == '\n':
+                              i += 1
+                              linha += 1
+                              coluna = 1
+                          else:
+                              i += 1
+                              coluna += 1
+                      if not fechado:
+                          raise ErroMPL('lexico', inicio_linha, inicio_coluna,
+                                        'comentario de bloco nao fechado')
+                      continue
+
+                  inicio = i
+                  inicio_linha, inicio_coluna = linha, coluna
+
+                  if c == '"':
+                      i += 1
+                      coluna += 1
+                      while True:
+                          if i >= tamanho or fonte[i] in '\n\r':
+                              raise ErroMPL('lexico', inicio_linha, inicio_coluna,
+                                            'texto nao fechado')
+                          if fonte[i] == '"':
+                              i += 1
+                              coluna += 1
+                              tokens.append(Token('TEXTO', fonte[inicio:i],
+                                                  inicio_linha, inicio_coluna))
+                              break
+                          if fonte[i] == '\\':
+                              escape_linha, escape_coluna = linha, coluna
+                              if i + 1 >= tamanho or fonte[i + 1] in '\n\r':
+                                  raise ErroMPL('lexico', inicio_linha, inicio_coluna,
+                                                'texto nao fechado')
+                              if fonte[i + 1] not in 'nt"\\':
+                                  raise ErroMPL('lexico', escape_linha, escape_coluna,
+                                                'escape invalido em texto')
+                              i += 2
+                              coluna += 2
+                              continue
+                          i += 1
+                          coluna += 1
+                      continue
+
+                  if '0' <= c <= '9':
+                      while i < tamanho and '0' <= fonte[i] <= '9':
+                          i += 1
+                          coluna += 1
+                      if i < tamanho and fonte[i] == '.':
+                          ponto_linha, ponto_coluna = linha, coluna
+                          if i + 1 >= tamanho or not ('0' <= fonte[i + 1] <= '9'):
+                              raise ErroMPL('lexico', ponto_linha, ponto_coluna,
+                                            'numero real exige digitos depois do ponto')
+                          i += 1
+                          coluna += 1
+                          while i < tamanho and '0' <= fonte[i] <= '9':
+                              i += 1
+                              coluna += 1
+                          tokens.append(Token('REAL', fonte[inicio:i], inicio_linha, inicio_coluna))
+                      else:
+                          tokens.append(Token('INTEIRO', fonte[inicio:i], inicio_linha, inicio_coluna))
+                      continue
+
+                  if _inicio_id(c):
+                      i += 1
+                      coluna += 1
+                      while i < tamanho and _continua_id(fonte[i]):
+                          i += 1
+                          coluna += 1
+                      lexema = fonte[inicio:i]
+                      tokens.append(Token(PALAVRAS.get(lexema, 'ID'), lexema,
+                                          inicio_linha, inicio_coluna))
+                      continue
+
+                  dois = fonte[i:i + 2]
+                  if dois in OPERADORES_DOIS:
+                      tokens.append(Token(OPERADORES_DOIS[dois], dois,
+                                          inicio_linha, inicio_coluna))
+                      i += 2
+                      coluna += 2
+                      continue
+
+                  if c in SIMBOLOS:
+                      tokens.append(Token(SIMBOLOS[c], c, inicio_linha, inicio_coluna))
+                      i += 1
+                      coluna += 1
+                      continue
+
+                  if c == '.':
+                      raise ErroMPL('lexico', linha, coluna,
+                                    'ponto fora de um literal real valido')
+
+                  raise ErroMPL('lexico', linha, coluna,
+                                f'caractere inesperado {c!r}')
+
+              tokens.append(Token('FIM_ARQUIVO', '', linha, coluna))
+              return tokens
+          PY
+
+      - name: Verificar Entrega 1
+        run: make verificar E=1
+
+      - name: Gerar evidencia
+        run: make evidencias E=1
+
+      - name: Salvar copia limpa
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Entrega 1 - analisador lexico" || true
+          git push
