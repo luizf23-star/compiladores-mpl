@@ -78,3 +78,16 @@ make verificar E=2
 make evidencias E=2
 make prova E=2
 ```
+
+## Entrega 3 — Tabela de simbolos e verificacao de tipos
+
+Os escopos foram representados com objetos `Escopo` ligados ao escopo-pai, cada um com um dicionario de simbolos. Assim, a busca percorre o escopo atual ate seus pais e permite que uma declaracao interna esconda uma variavel externa sem altera-la. A `Tabela` tambem guarda os escopos na ordem de abertura para gerar o formato solicitado em `--tabela`. A analise passa duas vezes pelas funcoes: primeiro registra as assinaturas globais e depois valida os comandos e os tipos, permitindo chamadas de funcoes declaradas adiante e recursao mutua.
+
+### Verificacao da E3
+
+```bash
+./compilar --tabela exemplos/tudo.mpl
+make verificar E=3
+make evidencias E=3
+make prova E=3
+```
