@@ -2,8 +2,7 @@ name: Gerar evidencias Entrega 3
 on:
   push:
     branches: [main]
-    paths:
-      - .github/workflows/e3-evidencia.yml
+  workflow_dispatch:
 
 permissions:
   contents: write
