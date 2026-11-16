@@ -20,6 +20,6 @@ test_texto_unicode_escapes_e_concatenacao (__main__.IntegracaoE4.test_texto_unic
 test_valores_padrao_e_sombreamento (__main__.IntegracaoE4.test_valores_padrao_e_sombreamento) ... ok
 
 ----------------------------------------------------------------------
-Ran 20 tests in 0.983s
+Ran 20 tests in 1.031s
 
 OK
