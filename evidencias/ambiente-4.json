@@ -1,0 +1,14 @@
+{
+  "instante_utc": "2026-11-16T22:32:00.334952+00:00",
+  "commit_testado": "55bada35301a6d5d6bff1a32a6f0c615f6be44af",
+  "execucao": "https://github.com/luizf23-star/compiladores-mpl/actions/runs/43970909186",
+  "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+  "sistema": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+  "comandos": [
+    "make prova E=4",
+    "python3 verificar.py 4",
+    "python3 testes/testar_e4.py",
+    "./compilar exemplos/planejador_estudos.mpl",
+    "./executar exemplos/planejador_estudos.mplb"
+  ]
+}

@@ -1,0 +1,25 @@
+test_argumentos_avaliados_em_ordem (__main__.IntegracaoE4.test_argumentos_avaliados_em_ordem) ... ok
+test_bytecode_independe_do_arquivo_fonte (__main__.IntegracaoE4.test_bytecode_independe_do_arquivo_fonte) ... ok
+test_bytecode_invalido_tem_diagnostico (__main__.IntegracaoE4.test_bytecode_invalido_tem_diagnostico) ... ok
+test_conversoes_atribuicao_argumento_retorno (__main__.IntegracaoE4.test_conversoes_atribuicao_argumento_retorno) ... ok
+test_declaracao_dentro_do_laco_reinicializa (__main__.IntegracaoE4.test_declaracao_dentro_do_laco_reinicializa) ... ok
+test_divisao_e_resto_com_todos_os_sinais (__main__.IntegracaoE4.test_divisao_e_resto_com_todos_os_sinais) ... ok
+test_divisao_zero_aponta_comando_multilinha (__main__.IntegracaoE4.test_divisao_zero_aponta_comando_multilinha) ... ok
+test_e_ou_avaliam_os_dois_lados_em_ordem (__main__.IntegracaoE4.test_e_ou_avaliam_os_dois_lados_em_ordem) ... ok
+test_estouro_pilha_aponta_chamada_recursiva (__main__.IntegracaoE4.test_estouro_pilha_aponta_chamada_recursiva) ... ok
+test_inteiro_grande_nao_passa_por_float (__main__.IntegracaoE4.test_inteiro_grande_nao_passa_por_float) ... ok
+test_ir_expoe_funcoes_e_rotulos_sem_gravar_bytecode (__main__.IntegracaoE4.test_ir_expoe_funcoes_e_rotulos_sem_gravar_bytecode) ... ok
+test_multiplos_lacos_e_desvios (__main__.IntegracaoE4.test_multiplos_lacos_e_desvios) ... ok
+test_nomes_nao_colidem_com_temporarios (__main__.IntegracaoE4.test_nomes_nao_colidem_com_temporarios) ... ok
+test_parametros_por_valor_e_retorno_vazio (__main__.IntegracaoE4.test_parametros_por_valor_e_retorno_vazio) ... ok
+test_quadros_isolados_e_recursao_profunda (__main__.IntegracaoE4.test_quadros_isolados_e_recursao_profunda) ... ok
+test_recursao_mutua_e_chamadas_adiantadas (__main__.IntegracaoE4.test_recursao_mutua_e_chamadas_adiantadas) ... ok
+test_resto_zero (__main__.IntegracaoE4.test_resto_zero) ... ok
+test_resultado_descartado_nao_suja_pilha (__main__.IntegracaoE4.test_resultado_descartado_nao_suja_pilha) ... ok
+test_texto_unicode_escapes_e_concatenacao (__main__.IntegracaoE4.test_texto_unicode_escapes_e_concatenacao) ... ok
+test_valores_padrao_e_sombreamento (__main__.IntegracaoE4.test_valores_padrao_e_sombreamento) ... ok
+
+----------------------------------------------------------------------
+Ran 20 tests in 0.983s
+
+OK
