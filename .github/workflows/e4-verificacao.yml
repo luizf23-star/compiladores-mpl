@@ -1,0 +1,104 @@
+name: Verificar E4 Compiladores
+
+on:
+  push:
+    branches: [main, entrega-4-compiladores]
+    paths:
+      - "mplc/**"
+      - "compilar"
+      - "executar"
+      - "verificar.py"
+      - "Makefile"
+      - "testes/**"
+      - "exemplos/*.mpl"
+      - "exemplos/*.saida"
+      - "README.md"
+      - "entregas/ENVIO-E4.md"
+      - ".github/workflows/e4-verificacao.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: verificar-e4-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Conferir sintaxe Python
+        run: python3 -m compileall -q mplc testes/testar_e4.py
+
+      - name: Provar num clone limpo
+        shell: bash
+        run: |
+          set -euo pipefail
+          make prova E=4 | tee "$RUNNER_TEMP/prova-e4.txt"
+
+      - name: Gerar verificacao oficial
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidencias
+          python3 verificar.py 4 | tee evidencias/verificacao-4.txt
+          cp "$RUNNER_TEMP/prova-e4.txt" evidencias/prova-4.txt
+
+      - name: Executar casos adicionais
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 testes/testar_e4.py 2>&1 | tee evidencias/testes-extras-4.txt
+
+      - name: Compilar e executar programa proprio
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./compilar exemplos/planejador_estudos.mpl
+          ./executar exemplos/planejador_estudos.mplb > evidencias/programa-proprio.txt
+          diff -u exemplos/planejador_estudos.saida evidencias/programa-proprio.txt
+          ./compilar --ir exemplos/planejador_estudos.mpl > evidencias/programa-proprio.ir
+          python3 - <<'PY'
+          import datetime
+          import json
+          import os
+          import platform
+          import sys
+          from pathlib import Path
+
+          registro = {
+              "instante_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+              "commit_testado": os.environ["GITHUB_SHA"],
+              "execucao": (os.environ["GITHUB_SERVER_URL"] + "/"
+                          + os.environ["GITHUB_REPOSITORY"] + "/actions/runs/"
+                          + os.environ["GITHUB_RUN_ID"]),
+              "python": sys.version,
+              "sistema": platform.platform(),
+              "comandos": ["make prova E=4", "python3 verificar.py 4",
+                           "python3 testes/testar_e4.py",
+                           "./compilar exemplos/planejador_estudos.mpl",
+                           "./executar exemplos/planejador_estudos.mplb"],
+          }
+          Path("evidencias/ambiente-4.json").write_text(
+              json.dumps(registro, indent=2, ensure_ascii=False) + "\n",
+              encoding="utf-8")
+          PY
+
+      - name: Registrar evidencias reais aprovadas
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add evidencias/verificacao-4.txt evidencias/prova-4.txt
+          git add evidencias/testes-extras-4.txt evidencias/programa-proprio.txt
+          git add evidencias/programa-proprio.ir evidencias/ambiente-4.json
+          git add -f exemplos/planejador_estudos.mplb
+          if ! git diff --cached --quiet; then
+            git commit -m "Registra verificacao real da Entrega 4 de Compiladores"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
